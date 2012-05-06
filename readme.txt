@@ -3,7 +3,7 @@ Contributors: Sonorth Corp.
 Tags: thumbshot, website screenshot, website thumbnail, website preview, snapshot, pagepix, webshot
 Requires at least: 2.0
 Tested up to: 3.3
-Stable tag: trunk
+Stable tag: 1.4.0
 
 This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
 
@@ -15,7 +15,7 @@ This plugin allows any user to add previews of websites right in the content of 
 1. Easily embed website previews in posts
 2. Flexible caching system allows you to store retrieved screenshots on your server
 3. [OPTIONAL] Display custom images for queued or error thumbshots
-4. [OPTIONAL] Display thumbshot URLs in a safe manner without linking them directly to the target website 
+4. [OPTIONAL] Display thumbshot URLs in a safe manner without linking them directly to the target website
 4. [OPTIONAL] Display mouseover header preview over thumbshots
 5. [OPTIONAL] Display mouseover pop-up preview over external links in your posts
 6. [OPTIONAL] Utilize several Thumbshots.RU PRO features
