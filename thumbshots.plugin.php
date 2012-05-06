@@ -5,19 +5,18 @@ Plugin URI: http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin
 Author: Thumbshots.RU Dev Team
 Author URI: http://www.thumbshots.ru/
 Description: This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
-Version: 1.4.0
+Version: 1.4.1
 */
 
 /**
- *
  * This file implements the Website Thumbshots plugin
  *
  * Author: Sonorth Corp. - {@link http://www.sonorth.com/}
- * License: Creative Commons Attribution-ShareAlike 3.0 Unported
- * License info: {@link http://creativecommons.org/licenses/by-sa/3.0/}
+ * License: GPL version 3 or any later version
+ * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * Version: 1.4.0
- * Date: 09-Feb-2012
+ * Version: 1.4.1
+ * Date: 06-May-2012
  *
  */
 
@@ -32,7 +31,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 {
 	var $name = 'Website Thumbshots';
 	var $code = 'thumbshots_plugin';
-	var $version = '1.4.0';
+	var $version = '1.4.1';
 	var $help_url = 'http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin';
 
 	var $debug = 0;
@@ -47,8 +46,8 @@ class thumbshots_plugin extends SonorthPluginHelper
 	var $dispatcher;
 	var $_service_images;
 	var $_head_scripts = array();
-	
-	
+
+
 	function thumbshots_plugin()
 	{
 		$this->menu_text = 'Thumbshots Plugin';
@@ -57,9 +56,9 @@ class thumbshots_plugin extends SonorthPluginHelper
 
 		$this->thumbnails_path = WP_CONTENT_DIR.'/'.$this->cache_dirname.'/';
 		$this->thumbnails_url = content_url('/'.$this->cache_dirname.'/');
-		
+
 		$error_codes_url = 'http://www.thumbshots.ru/error-codes';
-		
+
 		$max_w = 1280;
 		$onclick = 'onclick="Javascript:jQuery.get(this.href); jQuery(this).replaceWith(\'<span style=\\\'color:red\\\'>done</span>\'); return false;"';
 
@@ -237,7 +236,7 @@ all = http://domain.tld/image-general.jpg
 		);
 
 		$this->initialize_options($r);
-		
+
 		// Action hooks
 		$this->add_action('init');
 		$this->add_action('wp_ajax_thumb_reload');
@@ -247,7 +246,7 @@ all = http://domain.tld/image-general.jpg
 
 		// Add our button to post edit form
 		$this->add_action('dbx_post_sidebar');
-		
+
 		add_shortcode( 'thumb', array($this, 'parse_shortcode') );
 		add_shortcode( 'thumbshot', array($this, 'parse_shortcode') );
 	}
@@ -260,10 +259,10 @@ all = http://domain.tld/image-general.jpg
 			$this->msg( $this->T_('You will not be able to automatically generate thumbnails for images. Enable the gd2 extension in your php.ini file or ask your hosting provider about it.'), 'error' );
 			return false;
 		}
-		
+
 		// Create cache directory
 		snr_mkdir_r( $this->thumbnails_path );
-		
+
 		if( !is_writable($this->thumbnails_path) )
 		{
 			$this->msg( sprintf( $this->T_('You must create the following directory with write permissions (777):%s'), '<br />'.$this->thumbnails_path ), 'error' );
@@ -271,15 +270,15 @@ all = http://domain.tld/image-general.jpg
 		}
 		return true;
 	}
-	
-	
+
+
 	function get_thumbshot( $params )
 	{
 		if( is_string($params) )
 		{
 			$params = array('url' => $params);
 		}
-		
+
 		// Set defaults
 		$params = array_merge( array(
 				'url'		=> '',
@@ -288,119 +287,119 @@ all = http://domain.tld/image-general.jpg
 				'display'	=> false,
 				'exit_page' => '',
 			), $params );
-		
+
 		// Get thumbshot image
 		$r = $this->get_image( $params['url'], $params['width'], $params['height'], $params['exit_page'] );
-		
+
 		if( $params['display'] ) echo $r;
-		
+
 		return $r;
 	}
-	
-	
+
+
 	function init_thumbshot_class()
 	{
 		if( defined('THUMBSHOT_INIT') ) return;
-		
+
 		define('THUMBSHOT_INIT', true);
-		
+
 		require_once dirname(__FILE__).'/'.$this->thumbshots_class;
-		
+
 		$Thumbshot = new Thumbshot();
-		
+
 		if( $this->get_option('access_key') )
 		{	// The class may use it's own preset key
 			$Thumbshot->access_key = $this->get_option('access_key');
 		}
-		
+
 		$Thumbshot->quality = $this->get_option('quality');
 		$Thumbshot->create_link = $this->get_option('link');
-		
+
 		$Thumbshot->original_image_w = $this->get_option('original_image_w');
 		$Thumbshot->original_image_h = $this->get_option('original_image_h');
 		//$Thumbshot->original_image_q = $this->get_option('original_image_q');
-		
+
 		$Thumbshot->cache_days = $this->get_option('cache_days');
 		$Thumbshot->err_cache_days = $this->get_option('err_cache_days');
 		$Thumbshot->queued_cache_days = $this->get_option('queued_cache_days');
-		
+
 		// Use custom service images
 		$Thumbshot->service_images = $this->get_service_images();
-		
+
 		if( $this->display_preview == '#' )
 		{	// Global override setting
 			$Thumbshot->preview_width = $this->get_option('preview_width');
 			$Thumbshot->preview_height = $this->get_option('preview_height');
 			$Thumbshot->display_preview = $this->get_option('display_preview');
 		}
-		
+
 		if( $this->dispatcher )
 		{	// Dispatcher
 			$Thumbshot->dispatcher = $this->dispatcher;
 		}
-		
+
 		if( $this->is_reload_allowed() )
 		{	// Display a link to reload/refresh cached thumbshot image
 			$Thumbshot->display_reload_link = true;
 			$Thumbshot->reload_link_url = $this->get_url('reload');
 		}
-		
+
 		$Thumbshot->debug = ( $this->debug || $this->get_option('debug') );
 		$Thumbshot->debug_IP = ( $this->debug_IP ? $this->debug_IP : $this->get_option('debug_ip') );
-		
+
 		$Thumbshot->image_class = 'thumbshots_plugin';
 		$Thumbshot->thumbnails_url = $this->thumbnails_url;
 		$Thumbshot->thumbnails_path = $this->thumbnails_path;
-		
+
 		//set_param( 'Thumbshot', $Thumbshot );
 		$GLOBALS['Thumbshot'] = $Thumbshot;
 	}
-	
-	
+
+
 	function get_image( $url, $w = false, $h = false, $exit_page = '' )
 	{
 		global $Thumbshot;
-		
+
 		if( empty($url) )
 		{
 			return;
 		}
-		
+
 		if( ! function_exists('gd_info') )
 		{	// GD is not installed
 			return;
 		}
-		
+
 		if( empty($Thumbshot) )
 		{	// Initialize Thumbshot class and set defaults
 			$this->init_thumbshot_class();
 		}
-		
+
 		if( strstr( $url, '|http' ) )
 		{
 			$tmpurl = @explode( '|http', $url );
 			$url = $tmpurl[0];
 		}
-		
+
 		if( preg_match( '~[^(\x00-\x7F)]~', $url ) && function_exists('idna_encode') )
 		{	// Non ASCII URL, let's convert it to IDN:
 			$idna_url = idna_encode($url);
 		}
-		
+
 		$Thumbshot->url = $url;
 		$Thumbshot->link_url = isset($tmpurl[1]) ? 'http'.$tmpurl[1] : '';
 		$Thumbshot->idna_url = isset($idna_url) ? $idna_url : '';
-		
+
 		$Thumbshot->width = ($w === false) ? $this->get_option('width') : $w;
 		$Thumbshot->height = ($h === false) ? $this->get_option('height') : $h;
-		
+
 		$Thumbshot->display_preview = ($this->display_preview != '#') ? $this->display_preview : $this->get_option('display_preview');
-		
+
 		if( $exit_page == '' )
 		{
 			$exit_page = $this->get_option('link_to_exit_page');
 		}
-		
+
 		if( $exit_page == 1 )
 		{	// Link thumbshot to an exit "goodbye" page
 			$Thumbshot->link_to_exit_page = true;
@@ -411,37 +410,37 @@ all = http://domain.tld/image-general.jpg
 			$Thumbshot->link_to_exit_page = false;
 			$Thumbshot->exit_page_url = '';
 		}
-		
+
 		// Get the thumbshot
 		return $Thumbshot->get();
 	}
-	
-	
+
+
 	function parse_shortcode( $p, $url )
 	{
 		$p = shortcode_atts( array('w'=>false,'h'=>false,'e'=>''), $p );
 		return $this->get_image( $url, $p['w'], $p['h'], $p['e'] );
 	}
-	
-	
+
+
 	function get_service_images()
 	{
 		if( is_null($this->_service_images) )
 		{
 			$this->_service_images = array();
 			if( $this->get_option('service_images_enabled') && $this->get_option('service_images') )
-			{	
+			{
 				$service_images = array();
 				$ims = $this->get_option('service_images');
 				$ims = explode( "\n", trim($ims) );
-				
+
 				foreach( $ims as $img )
 				{
 					list($k,$v) = explode( '=', $img );
 
 					$k = trim($k);
 					$v = trim($v);
-					
+
 					if( preg_match( '~^((.+x\d+)|all)$~', $k ) && preg_match( '~^https?://.{3}~', $v ) )
 					{	// It looks like a valid image definition
 						$service_images[$k] = $v;
@@ -450,11 +449,11 @@ all = http://domain.tld/image-general.jpg
 				$this->_service_images = $service_images;
 			}
 		}
-		
+
 		return $this->_service_images;
 	}
-	
-	
+
+
 	function init()
 	{
 		// Display an exit page if requested, then exit
@@ -467,7 +466,7 @@ all = http://domain.tld/image-general.jpg
 		{	// Add jQuery for reload links
 			wp_enqueue_script('jquery');
 		}
-		
+
 		if( $this->display_preview && $this->get_option('display_preview') )
 		{	// Add internal preview javascript
 			$this->_head_scripts[] = 'ThumbshotPreview("ThumbshotPreview");';
@@ -502,10 +501,10 @@ all = http://domain.tld/image-general.jpg
 			jQuery(function() {
 				var thumbshots_plugin_button = "<span><a style=\"margin-left: 30px\" href=\"#\" class=\"button-primary thumbshots-plugin-button\">'.$this->T_('Add thumbshot').'</a></span>";
 				jQuery( thumbshots_plugin_button ).appendTo( jQuery("#edit-slug-box") );
-				
+
 				jQuery(".thumbshots-plugin-button").click(function(event) {
 					event.preventDefault();
-					
+
 					var t_url = prompt( "'.$this->T_('Site URL').'", "http://" );
 
 					if( t_url == null || t_url.length < 8 ) return;
@@ -531,7 +530,7 @@ all = http://domain.tld/image-general.jpg
 					}
 					code = code + " e=\"" + t_ext + "\"";
 					code = code + "]" + t_url + "[/thumb]";
-						
+
 					tinyMCE.execCommand("mceInsertContent",false,("<br />"+code+"<br />"));
 					jQuery("#content").val( jQuery("#content").val() + ("\n" + code + "\n") );
 				});
@@ -540,8 +539,8 @@ all = http://domain.tld/image-general.jpg
 			//]]>
 		</script>';
 	}
-	
-	
+
+
 	function get_url( $type = 'reload' )
 	{
 		switch( $type )
@@ -549,19 +548,19 @@ all = http://domain.tld/image-general.jpg
 			case 'reload':
 				return admin_url('/admin-ajax.php').'?thumb-reload/#md5#/#url#&amp;action=thumb_reload';
 				break;
-			
+
 			case 'clear':
 				return admin_url('/admin-ajax.php').'?action=clear_thumb_cache&amp;clear_thumb_cache=';
 				break;
-			
+
 			case 'exit':
 				return site_url('/').'?thumb-exit/#md5#/#url#&amp;action=thumb_exit&amp;redirect_to='.rawurlencode(snr_get_request('uri')).'&amp;lang='.get_bloginfo('language');
 				break;
 		}
 		return false;
 	}
-	
-	
+
+
 	function is_reload_allowed()
 	{
 		if( $this->get_option('allow_reloads') && is_super_admin() )
@@ -570,12 +569,12 @@ all = http://domain.tld/image-general.jpg
 		}
 		return false;
 	}
-	
-	
+
+
 	function wp_ajax_clear_thumb_cache()
 	{
 		if( empty($_GET['clear_thumb_cache']) || !is_super_admin() ) return;
-		
+
 		// Let's clear thumbnails cache
 		switch( $_GET['clear_thumb_cache'] )
 		{
@@ -583,46 +582,46 @@ all = http://domain.tld/image-general.jpg
 				snr_cleardir_r( $this->thumbnails_path, true );
 				$this->msg( sprintf( $this->T_('Thumbnails cache has been cleared (%s)'), $this->T_('files') ), 'success' );
 				break;
-			
+
 			case 'everything':
 				snr_cleardir_r( $this->thumbnails_path, false );
 				$this->msg( sprintf( $this->T_('Thumbnails cache has been cleared (%s)'), $this->T_('files and folders') ), 'success' );
 				break;
 		}
 	}
-	
-	
+
+
 	function wp_ajax_thumb_reload()
 	{
 		global $Thumbshot;
-		
+
 		if( ! $this->is_reload_allowed() ) return;
-		
+
 		if( preg_match( '~^\?thumb-reload/([a-z0-9]{32})/(aHR0c.*?)&~i', str_replace( admin_url('/admin-ajax.php'), '', snr_get_request('url') ), $matches ) )
 		{
 			if( empty($Thumbshot) )
 			{	// Initialize Thumbshot class and set defaults
 				$this->init_thumbshot_class();
 			}
-			
+
 			// Stage 1: request thumbshot reload
 			$Thumbshot->args['refresh'] = 1;
-			
+
 			$url = @base64_decode($matches[2]);
 			$md5 = md5($url.'+'.$Thumbshot->dispatcher);
-			
+
 			if( $md5 != $matches[1] )
 			{
 				echo 'Bad URL'; die;
 			}
-			
+
 			$r = $Thumbshot->get_data( $Thumbshot->get_request_url($url) );
-			
+
 			// Stage 2: invalidate local cache
 			if( $Thumbshot->cache_days > 1 )
 			{
 				$dir = $this->thumbnails_path.substr( $md5, 0, 3 ).'/';
-				
+
 				if( is_dir($dir) )
 				{
 					$scan = glob(rtrim($dir,'/').'/*');
@@ -643,28 +642,28 @@ all = http://domain.tld/image-general.jpg
 	function display_exit_page()
 	{
 		global $Thumbshot;
-		
+
 		if( preg_match( '~^\?thumb-exit/([a-z0-9]{32})/(aHR0c.*?)&~i', str_replace( site_url('/'), '', snr_get_request('url') ), $matches ) )
 		{
 			if( empty($Thumbshot) )
 			{	// Initialize Thumbshot class and set defaults
 				$this->init_thumbshot_class();
 			}
-			
+
 			$url = @base64_decode($matches[2]);
 			$md5 = md5($url.'+'.$Thumbshot->dispatcher);
-			
+
 			if( $md5 != $matches[1] )
 			{
 				echo 'Bad URL'; die;
 			}
-			
+
 			if( ($cookie = @$_COOKIE['thumb_skip_exit_page']) && $cookie = 1 )
 			{	// We found a cookie, let's redirect without asking
 				header('Location: '.$url);
 				exit;
 			}
-			
+
 			$exit_template = 'exit_page';
 			if( !empty($_GET['lang']) && is_scalar($_GET['lang']) )
 			{
@@ -674,7 +673,7 @@ all = http://domain.tld/image-general.jpg
 					$exit_template .= '-'.$lang;
 				}
 			}
-			
+
 			if( $content = @file_get_contents( dirname(__FILE__).'/inc/'.$exit_template.'.tpl' ) )
 			{
 				$redirect_to = '/';
@@ -682,11 +681,11 @@ all = http://domain.tld/image-general.jpg
 				{
 					// Sanitize
 					$redirect_to = preg_replace( '~\r|\n~', '', trim(strip_tags($_GET['redirect_to'])) );
-					
+
 					// Don't allow absolute URLs
 					if( preg_match( '~^https?://~i', $redirect_to ) ) $redirect_to = '/';
 				}
-				
+
 				echo str_replace( array('{LEAVING_HOST}', '{LEAVING_URL}', '{TARGET_HOST}', '{TARGET_URL}'),
 								  array(snr_get_hostname(snr_get_request('host')), $redirect_to, snr_get_hostname($url), $url),
 								  $content );

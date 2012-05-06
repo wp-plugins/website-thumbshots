@@ -1,11 +1,12 @@
 <?php
 /**
- *
- * This file implements the common functions for Website Thumbshots plugin
+ * This file implements common functions for Website Thumbshots plugin
  *
  * Author: Sonorth Corp. - {@link http://www.sonorth.com/}
- * License: Creative Commons Attribution-ShareAlike 3.0 Unported
- * License info: {@link http://creativecommons.org/licenses/by-sa/3.0/}
+ * License: GPL version 3 or any later version
+ * License info: {@link http://www.gnu.org/licenses/gpl.txt}
+ *
+ * API specification and examples: {@link http://thumbshots.ru/api}
  *
  */
 
@@ -77,7 +78,7 @@ function snr_get_request( $mode = 'all' )
 		$ReqPath = false;
 		$ReqURI = false;
 	}
-	
+
 	$ReqHost = false;
 	if( !empty($_SERVER['HTTP_HOST']) )
 	{
@@ -105,11 +106,11 @@ function snr_get_hostname( $url )
 {
 	$domain = preg_replace( '~^https?://(www([0-9]+)?\.)?~i', '', $url );
 	$domain = preg_replace( '~^([^:/#]+)(.*)$~i', '\\1', $domain );
-	
+
 	return $domain;
 }
-	
-	
+
+
 function snr_cleardir_r( $path, $save_dirs = true )
 {
 	if( is_file($path) )
@@ -123,9 +124,9 @@ function snr_cleardir_r( $path, $save_dirs = true )
 		{
 			snr_cleardir_r($path);
 		}
-		
+
 		if( $save_dirs ) return true;
-		
+
 		return @rmdir($path);
 	}
 }
@@ -170,7 +171,7 @@ function snr_mkdir_r( $dirName, $cmod = 0755 )
 	{
 		$r = @mkdir( $dirName, $chmod, true );
 		@chmod( $dirName, $cmod );
-		
+
 		return $r;
 	}
 
