@@ -1,0 +1,9 @@
+/* Image styles */
+img.thumbshots_plugin { border: 1px #CCC solid; padding: 1px; display:block }
+
+/* Container */
+span.thumbshots_plugin { position:relative; display:block; float: left; clear:left; margin: 3px 12px 8px 0 }
+span.thumbshots_plugin a.thumb-reload { position:absolute; top:2px; left:2px; z-index:2; display:none }
+span.thumbshots_plugin:hover a.thumb-reload { display:block }
+#midcontent span.thumbshots_plugin,
+.sidebar span.thumbshots_plugin { margin:10px auto; float: none; width:154px }
