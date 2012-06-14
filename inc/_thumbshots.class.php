@@ -8,8 +8,8 @@
  *
  * API specification and examples: {@link http://thumbshots.ru/api}
  *
- * Version: 1.7.2
- * Date: 06-May-2012
+ * Version: 1.7.3
+ * Date: 14-Jun-2012
  *
  */
 if( !defined('THUMBSHOT_INIT') ) die( 'Please, do not access this page directly.' );
@@ -289,7 +289,7 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 		}
 
 		// Debug
-		$this->debug_disp( 'Server response', htmlentities($data) );
+		$this->debug_disp( 'Received data', htmlentities($data) );
 
 		if( !$Thumb = $this->json_to_array($data) )
 		{	// Debug
@@ -728,6 +728,10 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 		if( ! $content = @file_get_contents($filename) )
 		{
 			$content = $this->fetch_remote_page( $filename, $info );
+
+			// Remove chunks if any
+			$content = preg_replace( '~^[^{]*({.*?})[^}]*$~', '\\1', $content );
+
 			if($info['status'] != '200') $content = '';
 
 			$this->debug_disp( 'Server response', $info );
@@ -908,7 +912,7 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 				$path .= '?'.$url_parsed['query'];
 			}
 
-			$out = 'GET '.$path.' HTTP/1.1'."\r\n";
+			$out = 'GET '.$path.' HTTP/1.0'."\r\n"; // Use HTTP/1.0 to prevent chunking
 			$out .= 'Host: '.$host;
 			if( ! empty( $url_parsed['port'] ) )
 			{	// we don't want to add :80 if not specified. remote end may not resolve it. (e-g b2evo multiblog does not)
@@ -1000,16 +1004,15 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 			fclose( $fp );
 		}
 
-		// Extract info from the headers
+		// Extract info from headers
 		if( isset($r) )
 		{
-			foreach($headers as $header)
+			$headers = array_map( 'strtolower', $headers );
+			foreach( $headers as $header )
 			{
-				$header = strtolower($header);
-
-				if( preg_match( '^x-thumb-(\w+):(.*?)$i', '', $header, $match ) )
+				if( preg_match( '~^x-thumb-(\w+):(.*?)$~i', $header, $matches ) )
 				{	// Collect all "X-Thumb" headers
-					$info['x-thumb'][$match[1]] = $match[2];
+					$info['x-thumb'][$matches[1]] = $matches[2];
 				}
 
 				if( substr($header, 0, 13) == 'content-type:' )

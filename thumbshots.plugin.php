@@ -5,7 +5,7 @@ Plugin URI: http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin
 Author: Thumbshots.RU Dev Team
 Author URI: http://www.thumbshots.ru/
 Description: This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
-Version: 1.4.1
+Version: 1.4.2
 */
 
 /**
@@ -15,8 +15,8 @@ Version: 1.4.1
  * License: GPL version 3 or any later version
  * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * Version: 1.4.1
- * Date: 06-May-2012
+ * Version: 1.4.2
+ * Date: 14-Jun-2012
  *
  */
 
@@ -31,7 +31,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 {
 	var $name = 'Website Thumbshots';
 	var $code = 'thumbshots_plugin';
-	var $version = '1.4.1';
+	var $version = '1.4.2';
 	var $help_url = 'http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin';
 
 	var $debug = 0;
@@ -50,13 +50,21 @@ class thumbshots_plugin extends SonorthPluginHelper
 
 	function thumbshots_plugin()
 	{
-		$this->menu_text = 'Thumbshots Plugin';
+		$this->menu_text = 'Thumbshots';
 		$this->pre = 'thumb_';
 		$this->uri = snr_get_request('uri');
+		$this->foldername = 'website-thumbshots';
 
 		$this->thumbnails_path = WP_CONTENT_DIR.'/'.$this->cache_dirname.'/';
 		$this->thumbnails_url = content_url('/'.$this->cache_dirname.'/');
 
+		$locale = get_locale();
+		if( $locale != 'ru_RU' )
+		{
+			$locale = 'en_US';
+		}
+
+		$register_url = 'http://my.thumbshots.ru/auth/register.php?locale='.str_replace('_', '-', $locale);
 		$error_codes_url = 'http://www.thumbshots.ru/error-codes';
 
 		$max_w = 1280;
@@ -66,7 +74,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 			'access_key' => array(
 				'label' => $this->T_('Access Key'),
 				'size' => 50,
-				'note' => $this->T_('Enter your access key here.'),
+				'note' => sprintf( $this->T_('Enter your access key here.<br /><a %s>Get your FREE account now</a>!'), 'href="'.$register_url.'" target="_blank"' ),
 				'defaultvalue' => 'DEMOKEY002PMK1CERDMUI5PP5R4SPCYO',
 			),
 			'link' => array(

@@ -14,6 +14,7 @@
 class SonorthPluginHelper
 {
 	var $name;
+	var $foldername;
 	var $version;
 	var $help_url;
 	var $pre;
@@ -89,7 +90,13 @@ class SonorthPluginHelper
 
 	function admin_menu()
 	{
-		add_options_page( __($this->menu_text, $this->name), __($this->menu_text, $this->name), 10, $this->pre.'settings', array($this, 'admin_settings') );
+		$icon_url = '';
+		if( file_exists( dirname(__FILE__).'/../menu-icon.png') )
+		{	// Add menu icon if any
+			$icon_url = plugins_url().'/'.$this->foldername.'/menu-icon.png';
+		}
+
+		add_menu_page( $this->name, $this->menu_text, 10, $this->pre.'settings', array($this, 'admin_settings'), $icon_url );
 	}
 
 
@@ -189,7 +196,7 @@ class SonorthPluginHelper
 
 			case 'settings':
 				$image = '';
-				$img = plugins_url().'/'.$this->code.'/plugin-logo.png';
+				$img = plugins_url().'/'.$this->foldername.'/plugin-logo.png';
 				if( file_exists( dirname(__FILE__).'/../plugin-logo.png') )
 				{
 					$image = '<img src="'.$img.'" align="left" style="padding:0 15px 15px 0" alt="" />';

@@ -2,8 +2,8 @@
 Contributors: Sonorth Corp.
 Tags: thumbshot, website screenshot, website thumbnail, website preview, snapshot, pagepix, webshot
 Requires at least: 2.0
-Tested up to: 3.3
-Stable tag: 1.4.1
+Tested up to: 3.4
+Stable tag: 1.4.2
 
 This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
 
@@ -45,6 +45,11 @@ No, registration is optional. Only register if you want to use PRO features or i
 
 
 == Changelog ==
+
+= 1.4.2 =
+* New: restyled plugin menu button
+* Fix: use HTTP/1.0 requests to prevent chunking
+* Fix: errors in response headers parsing algorithm
 
 = 1.4.1 =
 * Released under GPL version 3 or any later version
