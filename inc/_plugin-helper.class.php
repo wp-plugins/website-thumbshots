@@ -15,6 +15,7 @@ class SonorthPluginHelper
 {
 	var $name;
 	var $foldername;
+	var $filename;
 	var $version;
 	var $help_url;
 	var $pre;
@@ -25,23 +26,45 @@ class SonorthPluginHelper
 	var $admin_debug = false;
 
 
+	function plugin_activate()
+	{
+		if( method_exists( $this, 'BeforeInstall' ) )
+		{
+			if( ! $this->BeforeInstall() ) die;
+		}
+	}
+
+
+	function initialize_options()
+	{
+		if( method_exists( $this, 'GetDefaultSettings' ) )
+		{
+			$this->options = $this->GetDefaultSettings();
+
+			foreach( $this->options as $k => $param )
+			{
+				if( isset($param['layout']) ) continue;
+				if( empty($k) || !isset($param['defaultvalue']) ) continue;
+
+				$this->add_option( $k, $param['defaultvalue']);
+			}
+		}
+	}
+
+
 	function T_( $string )
 	{	// Wrapper for b2evolution T_ function
 		return __($string);
 	}
 
 
-	function initialize_options( $params = array() )
+	function add_action_links( $links, $file )
 	{
-		$this->options = $params;
-
-		foreach( $params as $k => $param )
+		if( $file == plugin_basename( $this->foldername.'/'.$this->filename ) )
 		{
-			if( isset($param['layout']) ) continue;
-			if( empty($k) || !isset($param['defaultvalue']) ) continue;
-
-			$this->add_option( $k, $param['defaultvalue']);
+			array_unshift( $links, '<a href="admin.php?page='.$this->pre.'settings'.'">'.$this->T_('Settings').'</a>' );
 		}
+		return $links;
 	}
 
 
@@ -105,7 +128,7 @@ class SonorthPluginHelper
 		if( empty($_GET['page']) ) return;
 		if( $_GET['page'] != $this->pre.'settings' ) return;
 
-		$this->check_cache_directory();
+		$this->BeforeInstall();
 
 		if( isset($_POST['submit']) )
 		{	// Update settings

@@ -8,8 +8,8 @@
  *
  * API specification and examples: {@link http://thumbshots.ru/api}
  *
- * Version: 1.7.3
- * Date: 14-Jun-2012
+ * Version: 1.7.4
+ * Date: 22-Jul-2012
  *
  */
 if( !defined('THUMBSHOT_INIT') ) die( 'Please, do not access this page directly.' );
@@ -81,20 +81,20 @@ class Thumbshot
 
 	// Add custom params to thumbshot request, they will be added to request URL
 	// http://www.thumbshots.ru/api
-	var $args = array();
+	var $args = array( 'type' => 'json' );
 
 	var $dispatcher = 'http://get.thumbshots.ru/?';
-	var $uppercase_url_params = false;
 
 
 	// Internal
-	var $_name = 'Thumbshots PHP';
-	var $_version = '1.7.1';
-	var $_thumbnails_path_status = false;
-	var $_error_detected = false;
-	var $_error_code = false;
-	var $_custom_service_image = false;
-	var $_md5 = '';
+	protected $_name = 'Thumbshots PHP';
+	protected $_version = '1.7.4';
+	protected $_thumbnails_path_status = false;
+	protected $_error_detected = false;
+	protected $_error_code = false;
+	protected $_custom_service_image = false;
+	protected $_md5 = '';
+	protected $_uppercase_url_params = false;
 
 
 	// ################################################################3
@@ -1149,14 +1149,13 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 				  'h'		=> $this->original_image_h,
 				  'q'		=> $this->original_image_q,
 				  'size'	=> $this->original_image_size,
-				  'type'	=> 'json',
 				  'key'		=> $this->access_key,
 			), $this->args );
 
 		$arr = array();
 		foreach( $args as $k => $v )
 		{
-			if( $this->uppercase_url_params )
+			if( $this->_uppercase_url_params )
 			{
 				$arr[] = ucfirst($k).'='.$v;
 			}

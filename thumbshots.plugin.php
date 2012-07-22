@@ -5,7 +5,7 @@ Plugin URI: http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin
 Author: Thumbshots.RU Dev Team
 Author URI: http://www.thumbshots.ru/
 Description: This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
-Version: 1.4.2
+Version: 1.4.3
 */
 
 /**
@@ -15,9 +15,8 @@ Version: 1.4.2
  * License: GPL version 3 or any later version
  * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * Version: 1.4.2
- * Date: 14-Jun-2012
- *
+ * Version: 1.4.3
+ * Date: 22-Jul-2012
  */
 
 // Load common functions
@@ -31,7 +30,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 {
 	var $name = 'Website Thumbshots';
 	var $code = 'thumbshots_plugin';
-	var $version = '1.4.2';
+	var $version = '1.4.3';
 	var $help_url = 'http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin';
 
 	var $debug = 0;
@@ -43,7 +42,6 @@ class thumbshots_plugin extends SonorthPluginHelper
 	var $thumbnails_path;
 	var $display_preview = '#';		// fallback to plugin setting
 	var $link_to_exit_page = '#';	// fallback to plugin setting
-	var $dispatcher;
 	var $_service_images;
 	var $_head_scripts = array();
 
@@ -54,10 +52,37 @@ class thumbshots_plugin extends SonorthPluginHelper
 		$this->pre = 'thumb_';
 		$this->uri = snr_get_request('uri');
 		$this->foldername = 'website-thumbshots';
+		$this->filename = basename(__FILE__);
 
 		$this->thumbnails_path = WP_CONTENT_DIR.'/'.$this->cache_dirname.'/';
 		$this->thumbnails_url = content_url('/'.$this->cache_dirname.'/');
 
+		// Register shortcode tags
+		add_shortcode( 'thumb', array($this, 'parse_shortcode') );
+		add_shortcode( 'thumbshot', array($this, 'parse_shortcode') );
+
+		// Register plugin settigs
+		$this->initialize_options();
+
+		register_activation_hook( __FILE__, array($this, 'plugin_activate') );
+
+		// Action hooks
+		$this->add_action('init');
+		$this->add_action('wp_ajax_thumb_reload');
+		$this->add_action('wp_ajax_clear_thumb_cache');
+		$this->add_action('admin_menu');
+		$this->add_action('wp_head');
+
+		// Add our button to the post edit form
+		$this->add_action('dbx_post_sidebar');
+
+		// Add plugin action links
+		add_filter( 'plugin_action_links', array($this, 'add_action_links'), 10, 2 );
+	}
+
+
+	function GetDefaultSettings()
+	{
 		$locale = get_locale();
 		if( $locale != 'ru_RU' )
 		{
@@ -243,24 +268,11 @@ all = http://domain.tld/image-general.jpg
 			),
 		);
 
-		$this->initialize_options($r);
-
-		// Action hooks
-		$this->add_action('init');
-		$this->add_action('wp_ajax_thumb_reload');
-		$this->add_action('wp_ajax_clear_thumb_cache');
-		$this->add_action('admin_menu');
-		$this->add_action('wp_head');
-
-		// Add our button to post edit form
-		$this->add_action('dbx_post_sidebar');
-
-		add_shortcode( 'thumb', array($this, 'parse_shortcode') );
-		add_shortcode( 'thumbshot', array($this, 'parse_shortcode') );
+		return $r;
 	}
 
 
-	function check_cache_directory()
+	function BeforeInstall()
 	{
 		if( ! function_exists('gd_info') )
 		{
@@ -271,7 +283,11 @@ all = http://domain.tld/image-general.jpg
 		// Create cache directory
 		snr_mkdir_r( $this->thumbnails_path );
 
-		if( !is_writable($this->thumbnails_path) )
+		if( is_writable($this->thumbnails_path) )
+		{	// Hide directory listing
+			@touch( $this->thumbnails_path.'index.html' );
+		}
+		else
 		{
 			$this->msg( sprintf( $this->T_('You must create the following directory with write permissions (777):%s'), '<br />'.$this->thumbnails_path ), 'error' );
 			return false;
@@ -339,11 +355,6 @@ all = http://domain.tld/image-general.jpg
 			$Thumbshot->preview_width = $this->get_option('preview_width');
 			$Thumbshot->preview_height = $this->get_option('preview_height');
 			$Thumbshot->display_preview = $this->get_option('display_preview');
-		}
-
-		if( $this->dispatcher )
-		{	// Dispatcher
-			$Thumbshot->dispatcher = $this->dispatcher;
 		}
 
 		if( $this->is_reload_allowed() )
