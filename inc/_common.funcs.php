@@ -6,8 +6,6 @@
  * License: GPL version 3 or any later version
  * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * API specification and examples: {@link http://thumbshots.ru/api}
- *
  */
 
 

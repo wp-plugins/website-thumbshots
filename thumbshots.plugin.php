@@ -5,7 +5,7 @@ Plugin URI: http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin
 Author: Thumbshots.RU Dev Team
 Author URI: http://www.thumbshots.ru/
 Description: This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
-Version: 1.4.3
+Version: 1.4.4
 */
 
 /**
@@ -15,8 +15,8 @@ Version: 1.4.3
  * License: GPL version 3 or any later version
  * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * Version: 1.4.3
- * Date: 22-Jul-2012
+ * Version: 1.4.4
+ * Date: 10-Aug-2012
  */
 
 // Load common functions
@@ -30,7 +30,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 {
 	var $name = 'Website Thumbshots';
 	var $code = 'thumbshots_plugin';
-	var $version = '1.4.3';
+	var $version = '1.4.4';
 	var $help_url = 'http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin';
 
 	var $debug = 0;
@@ -107,6 +107,21 @@ class thumbshots_plugin extends SonorthPluginHelper
 				'defaultvalue' => true,
 				'type' => 'checkbox',
 				'note' => $this->T_('Check this to display clickable images.'),
+			),
+			'link_noindex' => array(
+				'label' => $this->T_('Add rel="noindex" to links'),
+				'defaultvalue' => false,
+				'type' => 'checkbox',
+				'note' => $this->T_('Check this to add rel="noindex" attribute to image links.'),
+			),
+			'link_nofollow' => array(
+				'label' => $this->T_('Add rel="nofollow" to links'),
+				'defaultvalue' => false,
+				'type' => 'checkbox',
+				'note' => $this->T_('Check this to add rel="nofollow" attribute to image links.'),
+			),
+			'sep0' => array(
+				'layout' => 'separator',
 			),
 			'allow_reloads' => array(
 				'label' => $this->T_('Allow thumbshot reloads'),
@@ -338,6 +353,8 @@ all = http://domain.tld/image-general.jpg
 
 		$Thumbshot->quality = $this->get_option('quality');
 		$Thumbshot->create_link = $this->get_option('link');
+		$Thumbshot->link_noindex = $this->get_option('link_noindex');
+		$Thumbshot->link_nofollow = $this->get_option('link_nofollow');
 
 		$Thumbshot->original_image_w = $this->get_option('original_image_w');
 		$Thumbshot->original_image_h = $this->get_option('original_image_h');
@@ -607,6 +624,8 @@ all = http://domain.tld/image-general.jpg
 				$this->msg( sprintf( $this->T_('Thumbnails cache has been cleared (%s)'), $this->T_('files and folders') ), 'success' );
 				break;
 		}
+
+		$this->BeforeInstall();
 	}
 
 

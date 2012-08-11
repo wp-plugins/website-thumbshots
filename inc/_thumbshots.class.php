@@ -8,8 +8,8 @@
  *
  * API specification and examples: {@link http://thumbshots.ru/api}
  *
- * Version: 1.7.4
- * Date: 22-Jul-2012
+ * Version: 1.7.5
+ * Date: 10-Aug-2012
  *
  */
 if( !defined('THUMBSHOT_INIT') ) die( 'Please, do not access this page directly.' );
@@ -27,9 +27,11 @@ class Thumbshot
 	// Thumbshot url address
 	var $url;
 
-	var $idna_url = '';			// (str) encoded IDN URL (internationalized domain name)
-	var $link_url = '';			// (str) alternative url for image link
-	var $create_link = true;	// (bool) display clickable images
+	var $idna_url = '';				// (str) encoded IDN URL (internationalized domain name)
+	var $link_url = '';				// (str) alternative url for image link
+	var $create_link = true;		// (bool) display clickable images
+	var $link_noindex = false;		// (bool) add rel="noindex" attribute to image links
+	var $link_nofollow = false;		// (bool) add rel="nofollow" attribute to image links
 
 	// Return image resource, otherwise complete <img> tag will be returned
 	var $return_binary_image = false;
@@ -88,7 +90,7 @@ class Thumbshot
 
 	// Internal
 	protected $_name = 'Thumbshots PHP';
-	protected $_version = '1.7.4';
+	protected $_version = '1.7.5';
 	protected $_thumbnails_path_status = false;
 	protected $_error_detected = false;
 	protected $_error_code = false;
@@ -212,7 +214,16 @@ class Thumbshot
 
 					$this->debug_disp('Alternative URL', $this->link_url);
 
-					$output = '<a href="'.$this->link_url.'" target="_blank">'.$output.'</a>';
+					$rel = '';
+					if( $this->link_noindex || $this->link_nofollow )
+					{	// Add NOINDEX and/or NOFOLLOW attributes
+						$attr = array();
+						if( $this->link_noindex ) $attr[] = 'noindex';
+						if( $this->link_nofollow ) $attr[] = 'nofollow';
+						$rel = 'rel="'.implode( ' ', $attr ).'"';
+					}
+
+					$output = '<a href="'.$this->link_url.'" '.$rel.' target="_blank">'.$output.'</a>';
 				}
 
 				if( $this->display_reload_link )
