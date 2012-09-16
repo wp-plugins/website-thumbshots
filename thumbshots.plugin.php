@@ -5,7 +5,7 @@ Plugin URI: http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin
 Author: Thumbshots.RU Dev Team
 Author URI: http://www.thumbshots.ru/
 Description: This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
-Version: 1.4.4
+Version: 1.4.5
 */
 
 /**
@@ -15,8 +15,8 @@ Version: 1.4.4
  * License: GPL version 3 or any later version
  * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * Version: 1.4.4
- * Date: 10-Aug-2012
+ * Version: 1.4.5
+ * Date: 14-Sep-2012
  */
 
 // Load common functions
@@ -30,7 +30,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 {
 	var $name = 'Website Thumbshots';
 	var $code = 'thumbshots_plugin';
-	var $version = '1.4.4';
+	var $version = '1.4.5';
 	var $help_url = 'http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin';
 
 	var $debug = 0;
@@ -325,10 +325,12 @@ all = http://domain.tld/image-general.jpg
 				'height'	=> false,
 				'display'	=> false,
 				'exit_page' => '',
+				'noindex'	=> NULL,
+				'nofollow'	=> NULL,
 			), $params );
 
 		// Get thumbshot image
-		$r = $this->get_image( $params['url'], $params['width'], $params['height'], $params['exit_page'] );
+		$r = $this->get_image( $params['url'], $params['width'], $params['height'], $params['exit_page'], $params['noindex'], $params['nofollow'] );
 
 		if( $params['display'] ) echo $r;
 
@@ -392,7 +394,7 @@ all = http://domain.tld/image-general.jpg
 	}
 
 
-	function get_image( $url, $w = false, $h = false, $exit_page = '' )
+	function get_image( $url, $w = false, $h = false, $exit_page = '', $noindex = NULL, $nofollow = NULL )
 	{
 		global $Thumbshot;
 
@@ -447,6 +449,18 @@ all = http://domain.tld/image-general.jpg
 			$Thumbshot->exit_page_url = '';
 		}
 
+		if( is_null($noindex) )
+		{
+			$noindex = $this->get_option('link_noindex');
+		}
+		$Thumbshot->link_noindex = $noindex;
+
+		if( is_null($nofollow) )
+		{
+			$nofollow = $this->get_option('link_nofollow');
+		}
+		$Thumbshot->link_nofollow = $nofollow;
+
 		// Get the thumbshot
 		return $Thumbshot->get();
 	}
@@ -454,8 +468,8 @@ all = http://domain.tld/image-general.jpg
 
 	function parse_shortcode( $p, $url )
 	{
-		$p = shortcode_atts( array('w'=>false,'h'=>false,'e'=>''), $p );
-		return $this->get_image( $url, $p['w'], $p['h'], $p['e'] );
+		$p = shortcode_atts( array('w'=>false, 'h'=>false, 'e'=>'', 'nofollow'=>NULL, 'noindex'=>NULL), $p );
+		return $this->get_image( $url, $p['w'], $p['h'], $p['e'], $p['noindex'], $p['nofollow'] );
 	}
 
 
@@ -532,11 +546,18 @@ all = http://domain.tld/image-general.jpg
 
 	function dbx_post_sidebar( $content )
 	{
+		echo '<div class="postbox" id="thumbshots_plugin_button" style="display:none"><div class="handlediv" title="Click to toggle"><br></div>
+				<h3 class="hndle"><span>'.$this->T_( $this->name ).'</span></h3>
+				<div class="inside" style="padding: 5px 0 3px 10px">
+					<span><a href="#" class="button thumbshots-plugin-button">'.$this->T_('Add thumbshot').'</a></span>
+				</div>
+			</div>';
+
 		echo '<script type="text/javascript">
 			//<![CDATA[
 			jQuery(function() {
-				var thumbshots_plugin_button = "<span><a style=\"margin-left: 30px\" href=\"#\" class=\"button-primary thumbshots-plugin-button\">'.$this->T_('Add thumbshot').'</a></span>";
-				jQuery( thumbshots_plugin_button ).appendTo( jQuery("#edit-slug-box") );
+				jQuery("#thumbshots_plugin_button").insertAfter( jQuery("#submitdiv") );
+				jQuery("#thumbshots_plugin_button").show();
 
 				jQuery(".thumbshots-plugin-button").click(function(event) {
 					event.preventDefault();
@@ -548,24 +569,34 @@ all = http://domain.tld/image-general.jpg
 					var t_width = prompt( "'.$this->T_('Thumbshot width').'", "'.$this->get_option('width').'" );
 					var t_height = prompt( "'.$this->T_('Thumbshot height').'", "'.$this->get_option('height').'" );
 					var t_url2 = prompt( "'.$this->T_('Link thumbshot to URL (optional)').'", "http://" );
-					var t_ext = confirm( "'.$this->T_('Display an exit page if thumbshot is linked to URL').'" );
+					var t_ext = confirm( "'.$this->T_('Display an exit page if thumbshot is linked to URL').'?" );
+					var t_noindex = confirm( "'.$this->T_('Add rel=\"noindex\" to thumbshot link').'?" );
+					var t_nofollow = confirm( "'.$this->T_('Add rel=\"nofollow\" to thumbshot link').'?" );
 
 					if( t_url2 !== null && t_url2.length > 7) t_url = t_url + "|" + t_url2;
 
 					if(t_ext) t_ext = 1;
 					else t_ext = 0;
 
+					if(t_noindex) t_noindex = 1;
+					else t_noindex = 0;
+
+					if(t_nofollow) t_nofollow = 1;
+					else t_nofollow = 0;
+
 					var code = "[thumb";
 					if(t_width) {
 						t_width = t_width.replace(/[^0-9]*/g, "");
-						if( t_width !="" ) code = code + " w=\"" + t_width + "\"";
+						if( t_width !="" ) code += " w=\"" + t_width + "\"";
 					}
 					if(t_height) {
 						t_height = t_height.replace(/[^0-9]*/g, "");
-						if( t_height !="" ) code = code + " h=\"" + t_height + "\"";
+						if( t_height !="" ) code += " h=\"" + t_height + "\"";
 					}
-					code = code + " e=\"" + t_ext + "\"";
-					code = code + "]" + t_url + "[/thumb]";
+					code += " e=\"" + t_ext + "\"";
+					code += " noindex=\"" + t_noindex + "\"";
+					code += " nofollow=\"" + t_nofollow + "\"";
+					code += "]" + t_url + "[/thumb]";
 
 					tinyMCE.execCommand("mceInsertContent",false,("<br />"+code+"<br />"));
 					jQuery("#content").val( jQuery("#content").val() + ("\n" + code + "\n") );

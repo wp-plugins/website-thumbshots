@@ -8,8 +8,8 @@
  *
  * API specification and examples: {@link http://thumbshots.ru/api}
  *
- * Version: 1.7.5
- * Date: 10-Aug-2012
+ * Version: 1.7.6
+ * Date: 14-Sep-2012
  *
  */
 if( !defined('THUMBSHOT_INIT') ) die( 'Please, do not access this page directly.' );
@@ -90,7 +90,7 @@ class Thumbshot
 
 	// Internal
 	protected $_name = 'Thumbshots PHP';
-	protected $_version = '1.7.5';
+	protected $_version = '1.7.6';
 	protected $_thumbnails_path_status = false;
 	protected $_error_detected = false;
 	protected $_error_code = false;
@@ -220,10 +220,10 @@ class Thumbshot
 						$attr = array();
 						if( $this->link_noindex ) $attr[] = 'noindex';
 						if( $this->link_nofollow ) $attr[] = 'nofollow';
-						$rel = 'rel="'.implode( ' ', $attr ).'"';
+						$rel = ' rel="'.implode( ' ', $attr ).'"';
 					}
 
-					$output = '<a href="'.$this->link_url.'" '.$rel.' target="_blank">'.$output.'</a>';
+					$output = '<a href="'.$this->link_url.'"'.$rel.' target="_blank">'.$output.'</a>';
 				}
 
 				if( $this->display_reload_link )
