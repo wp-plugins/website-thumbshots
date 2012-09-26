@@ -89,7 +89,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 			$locale = 'en_US';
 		}
 
-		$register_url = 'http://my.thumbshots.ru/auth/register.php?locale='.str_replace('_', '-', $locale);
+		$register_url = 'https://my.thumbshots.ru/auth/register.php?locale='.str_replace('_', '-', $locale);
 		$error_codes_url = 'http://www.thumbshots.ru/error-codes';
 
 		$max_w = 1280;
