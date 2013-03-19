@@ -8,8 +8,8 @@
  *
  * API specification and examples: {@link http://thumbshots.ru/api}
  *
- * Version: 1.7.6
- * Date: 14-Sep-2012
+ * Version: 1.7.7
+ * Date: 24-Feb-2013
  *
  */
 if( !defined('THUMBSHOT_INIT') ) die( 'Please, do not access this page directly.' );
@@ -412,10 +412,14 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 					$this->debug_disp( 'Unable to save temp image', $tmpfilename );
 					return false;
 				}
+				else
+				{
+					$this->debug_disp('Temp image retrieved from remote server and saved', $tmpfile);
+				}
 
 				if( $im = $this->load_image( $tmpfile, true ) )
 				{	// Debug
-					$this->debug_disp('Temp image retrieved from remote server and saved');
+					$this->debug_disp('Temp image loaded');
 
 					// Create thumbnail subdirectory
 					if( !$this->mkdir_r( $this->get_thumbnail_path( true ) ) )
@@ -703,18 +707,18 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 				$this->debug_disp( 'IDNa URL supplied, using it instead', $url );
 			}
 
-			if( ! preg_match('~^           # start
+			if( ! preg_match('~^                 # start
 				([a-z][a-z0-9+.\-]*)             # scheme
 				://                              # authorize absolute URLs only ( // not present in clsid: -- problem? ; mailto: handled above)
 				(\w+(:\w+)?@)?                   # username or username and password (optional)
 				( localhost |
-						[a-z0-9]([a-z0-9\-])*            # Don t allow anything too funky like entities
-						\.                               # require at least 1 dot
-						[a-z0-9]([a-z0-9.\-])+           # Don t allow anything too funky like entities
+						[\p{L}a-z0-9]([\p{L}a-z0-9\-])*     # Don t allow anything too funky like entities
+						\.                               	# require at least 1 dot
+						[\p{L}a-z0-9]([\p{L}a-z0-9.\-])+    # Don t allow anything too funky like entities
 				)
 				(:[0-9]+)?                       # optional port specification
 				.*                               # allow anything in the path (including spaces, but no newlines).
-				$~ix', $url, $match) )
+				$~ixu', $url, $match) )
 			{ // Cannot validate URL structure
 				return false;
 			}
@@ -1137,13 +1141,13 @@ LvX4yglOQdGPf3juCHnJhcUJKmiOltGD2CyAAAMA9pVY15kNU24AAAAASUVORK5CYII=" alt="" tit
 			{
 				$function = $mime_function[$image_info['mime']];
 
-				if( $imh = @$function($path) )
+				if( $imh = $function($path) )
 				{
 					return $imh;
 				}
-				elseif( $delete_bad_image )
+				else
 				{
-					unlink($path);
+					if( $delete_bad_image ) unlink($path);
 				}
 			}
 		}

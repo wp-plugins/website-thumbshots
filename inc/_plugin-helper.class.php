@@ -165,6 +165,12 @@ class SonorthPluginHelper
 						}
 					}
 
+					if( $k == 'access_key' && trim($_POST[$k]) != $this->get_option($k) )
+					{	// Clear cache after changing the API key
+						$this->msg( __('API key has chenged, clearing thumbshot cache...'), 'success' );
+						snr_cleardir_r( $this->thumbnails_path, true );
+					}
+
 					$this->update_option($k, $_POST[$k]);
 				}
 				elseif( $param['type'] == 'checkbox' )

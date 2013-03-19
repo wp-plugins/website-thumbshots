@@ -5,7 +5,7 @@ Plugin URI: http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin
 Author: Thumbshots.RU Dev Team
 Author URI: http://www.thumbshots.ru/
 Description: This plugin uses the Thumbshots.RU API to replace special tags in posts with website screenshots.
-Version: 1.4.5
+Version: 1.4.6
 */
 
 /**
@@ -15,8 +15,8 @@ Version: 1.4.5
  * License: GPL version 3 or any later version
  * License info: {@link http://www.gnu.org/licenses/gpl.txt}
  *
- * Version: 1.4.5
- * Date: 14-Sep-2012
+ * Version: 1.4.6
+ * Date: 26-Feb-2013
  */
 
 // Load common functions
@@ -30,12 +30,13 @@ class thumbshots_plugin extends SonorthPluginHelper
 {
 	var $name = 'Website Thumbshots';
 	var $code = 'thumbshots_plugin';
-	var $version = '1.4.5';
+	var $version = '1.4.6';
 	var $help_url = 'http://www.thumbshots.ru/en/website-thumbshots-wordpress-plugin';
 
 	var $debug = 0;
 	var $debug_IP = '';
 	var $cache_dirname = 'thumbs_cache';
+	var $default_key = 'DEMOKEY002PMK1CERDMUI5PP5R4SPCYO';
 
 	// Internal
 	var $thumbshots_class = 'inc/_thumbshots.class.php';
@@ -100,7 +101,7 @@ class thumbshots_plugin extends SonorthPluginHelper
 				'label' => $this->T_('Access Key'),
 				'size' => 50,
 				'note' => sprintf( $this->T_('Enter your access key here.<br /><a %s>Get your FREE account now</a>!'), 'href="'.$register_url.'" target="_blank"' ),
-				'defaultvalue' => 'DEMOKEY002PMK1CERDMUI5PP5R4SPCYO',
+				'defaultvalue' => $this->default_key,
 			),
 			'link' => array(
 				'label' => $this->T_('Link images'),
